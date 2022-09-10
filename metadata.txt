@@ -1,0 +1,27 @@
+[general]
+name=PEC_Avalia
+qgisMinimumVersion=3.0
+description=Realiza a avaliação da acurácia posicional em produtos e dados cartográficos, a partir de normas e padrões brasileiros
+version=1.0
+author=Isaac Antunes Miranda Junior; Afonso de Paula dos Santos
+email=isaac.junior@ufv.br; afonso.santos@ufv.br
+
+about=Este plugin possibilita executar a avaliação da acurácia posicional em produtos e dados cartográficos a partir de três normas/padrões brasileiros: (i) Decreto nº 89.817 / ET-CQDG; (ii) NBR 13.133, versão 1994; (iii) norma de execução nº 02 de 2018 do INCRA. Para sua aplicação é necessário dispor de uma camada vetorial de teste (produto avaliado) e uma camada vetorial dos dados de referência. Ao executar o processo, o plugin gera um arquivo .txt com o relatorio do processamento e a classificação de acordo com a norma utilizada.
+
+tracker=http://bugs
+repository=http://repo
+
+hasProcessingProvider=no
+changelog=1.0 - versão inicial
+
+tags=analysis, PEC, PEC-PCD, Decreto 89817, ET-CQDG, NBR 13133, INCRA, Acurácia Posicional, Qualidade, Cartografia, Controle de qualidade cartográfica, Spatial Data Quality, Positional Accuracy, Standard, Brasil, Brazil, UFV
+
+homepage=http://homepage
+category=Plugins
+icon=pec_avalia.png
+experimental=False
+deprecated=False
+#plugin_dependencies=
+#category= 
+server=False
+

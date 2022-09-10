@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/pec_avalia" >
+        <file>pec_avalia.png</file>
+    </qresource>
+</RCC>

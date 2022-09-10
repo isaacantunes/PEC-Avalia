@@ -1,0 +1,552 @@
+
+#Programa desenvolvido por Isaac Antunes Miranda Junior do curso de Engenharia de Agrimensura e Cartográfica da Universidade Federal de Viçosa,
+#orientado pelo Professor Afonso de Paula dos Santos através do programa de iniciação cientifica CAPES/PIBIC.'
+#Este projeto de pesquisa é parte integrante de pesquisas que estão em desenvolvimento no Programa de Pós-Graduação em Engenharia Civil (PPGEC),
+#área de concentração em Informações Espaciais, linha de pesquisa Cartografia, da Universidade Federal de Viçosa.')
+
+
+import math
+from scipy import stats
+
+def param_classes(esc_plan, esc_alt):
+    EM_A_pla = 0.00028 * esc_plan
+    EM_B_pla = 0.00050 * esc_plan
+    EM_C_pla = 0.00080 * esc_plan
+    EM_D_pla = 0.00100 * esc_plan      
+    
+    EP_A_pla = 0.00017 * esc_plan
+    EP_B_pla = 0.00030 * esc_plan
+    EP_C_pla = 0.00050 * esc_plan
+    EP_D_pla = 0.00060 * esc_plan
+    
+    EM_A_alt = 0.27 * esc_alt
+    EM_B_alt = 0.5 * esc_alt
+    EM_C_alt = (3/5) * esc_alt
+    EM_D_alt = (3/4) * esc_alt       
+    
+    EP_A_alt = (1/6) * esc_alt
+    EP_B_alt = (1/3) * esc_alt
+    EP_C_alt = (2/5) * esc_alt
+    EP_D_alt = 0.5 * esc_alt
+    
+    return (EM_A_pla,EM_A_alt,EM_B_pla,EM_B_alt,EM_C_pla,EM_C_alt,EM_D_pla,EM_D_alt, EP_A_pla,EP_A_alt,EP_B_pla,EP_B_alt,EP_C_pla,EP_C_alt,EP_D_pla,EP_D_alt)
+
+def discrepancia2D(nome_pt, disc_x, disc_y):
+    eHi = []
+    for i,ponto in enumerate(nome_pt):
+        disc_res = math.sqrt(disc_x[i]**2 + disc_y[i]**2)
+        eHi.append(disc_res)
+    return(eHi)
+
+def discrepancia3D(nome_pt, disc_x, disc_y, disc_z):
+    eHi = []
+    for i,ponto in enumerate(nome_pt):
+        disc_res = math.sqrt(disc_x[i]**2 + disc_y[i]**2 + disc_z[i]**2)
+        eHi.append(disc_res)
+    return(eHi)
+
+def discrepancia1(nome_pt, x_test, x_ref, y_test, y_ref, z_test, z_ref):
+    disc_x = []
+    disc_y = []
+    disc_z = []
+    for i,ponto in enumerate(nome_pt):
+        d_x = x_test[i] - x_ref[i]     #Discrepancia em X
+        disc_x.append(d_x)
+        d_y = y_test[i] - y_ref[i]     #Discrepancia em Y
+        disc_y.append(d_y)        
+        d_z = z_test[i] - z_ref[i]     #Discrepancia em Z
+        disc_z.append(d_z)
+    return(disc_x, disc_y, disc_z)
+
+def perc_pec_CQDG(nome_pt, processamento, eHi, disc_z, EM_A_pla, EM_A_alt, EM_B_pla, EM_B_alt, EM_C_pla, EM_C_alt, EM_D_pla, EM_D_alt):
+    cont_A_plan = 0
+    cont_B_plan = 0
+    cont_C_plan = 0
+    cont_D_plan = 0
+    cont_A_alt = 0
+    cont_B_alt = 0
+    cont_C_alt = 0
+    cont_D_alt = 0
+    
+    for i,ponto in enumerate(nome_pt):
+        if processamento == 'plan':    #PLANIMETRIA
+            if eHi[i] <= EM_A_pla:
+               cont_A_plan += 1
+               cont_B_plan += 1
+               cont_C_plan += 1
+               cont_D_plan += 1
+            elif eHi[i] <= EM_B_pla:
+                cont_B_plan += 1
+                cont_C_plan += 1
+                cont_D_plan += 1
+            elif eHi[i] <= EM_C_pla:
+                cont_C_plan += 1
+                cont_D_plan += 1
+            elif eHi[i] <= EM_D_pla:
+                cont_D_plan += 1
+        elif processamento == 'alt':   #ALTIMETRIA
+            if abs(disc_z[i]) <= EM_A_alt:
+               cont_A_alt  += 1
+               cont_B_alt  += 1
+               cont_C_alt  += 1
+               cont_D_alt  += 1
+            elif abs(disc_z[i]) <= EM_B_alt:
+                cont_B_alt  += 1
+                cont_C_alt  += 1
+                cont_D_alt  += 1
+            elif abs(disc_z[i]) <= EM_C_alt:
+                cont_C_alt  += 1
+                cont_D_alt  += 1
+            elif abs(disc_z[i]) <= EM_D_alt:
+                cont_D_alt  += 1
+        else:                         #PLANIMETRIA E ALTIMETRIA
+            if eHi[i] <= EM_A_pla:
+               cont_A_plan += 1
+               cont_B_plan += 1
+               cont_C_plan += 1
+               cont_D_plan+= 1
+            elif eHi[i] <= EM_B_pla:
+                cont_B_plan += 1
+                cont_C_plan += 1
+                cont_D_plan += 1
+            elif eHi[i] <= EM_C_pla:
+                cont_C_plan += 1
+                cont_D_plan += 1
+            elif eHi[i] <= EM_D_pla:
+                cont_D_plan += 1
+            if abs(disc_z[i]) <= EM_A_alt:
+               cont_A_alt  += 1
+               cont_B_alt  += 1
+               cont_C_alt  += 1
+               cont_D_alt  += 1
+            elif abs(disc_z[i]) <= EM_B_alt:
+                cont_B_alt  += 1
+                cont_C_alt  += 1
+                cont_D_alt  += 1
+            elif abs(disc_z[i]) <= EM_C_alt:
+                cont_C_alt  += 1
+                cont_D_alt  += 1
+            elif abs(disc_z[i]) <= EM_D_alt:
+                cont_D_alt  += 1           
+                    
+    porce_A_plan = cont_A_plan/len(nome_pt)
+    porce_B_plan = cont_B_plan/len(nome_pt) 
+    porce_C_plan = cont_C_plan/len(nome_pt) 
+    porce_D_plan = cont_D_plan/len(nome_pt)
+    
+    porce_A_alt = cont_A_alt/len(nome_pt)
+    porce_B_alt = cont_B_alt/len(nome_pt) 
+    porce_C_alt = cont_C_alt/len(nome_pt) 
+    porce_D_alt = cont_D_alt/len(nome_pt)
+    
+    return(porce_A_plan, porce_A_alt, porce_B_plan, porce_B_alt, porce_C_plan, porce_C_alt,porce_D_plan, porce_D_alt)
+
+def calc_rms(nome_pt, processamento, disc_x, disc_y, disc_z):
+    rms_x = 0
+    rms_y = 0
+    rms_z = 0
+    for i,ponto in enumerate(nome_pt):
+        if processamento == 'plan':
+            rms_x = rms_x + (disc_x[i]**2)/(len(nome_pt))
+            rms_y = rms_y + (disc_y[i]**2)/(len(nome_pt))
+        elif processamento == 'alt':
+            rms_z = rms_z + (disc_z[i]**2)/(len(nome_pt))
+        else:
+            rms_x = rms_x + (disc_x[i]**2)/(len(nome_pt))
+            rms_y = rms_y + (disc_y[i]**2)/(len(nome_pt))
+            rms_z = rms_z + (disc_z[i]**2)/(len(nome_pt))
+            
+    rms_x = math.sqrt(rms_x)
+    rms_y = math.sqrt(rms_y)
+    rms_z = math.sqrt(rms_z)
+    rms_d2d = math.sqrt((rms_x**2) + (rms_y**2))
+    return(rms_x, rms_y, rms_z, rms_d2d)
+
+def analise_classe(processamento,rms_d2d,esc_plan, porce_A_plan, porce_A_alt, porce_B_plan, porce_B_alt, 
+                   porce_C_plan, porce_C_alt, porce_D_plan, porce_D_alt, EP_A_pla, EP_B_pla, EP_C_pla, EP_D_pla,
+                   rms_z, EP_A_alt, EP_B_alt, EP_C_alt, EP_D_alt, esc_alt):
+    saida_plan = ''
+    saida_alt = ''               
+    if processamento == 'plan':
+        print('Análise Planimétrica \nMetodologia: ET-CQDG')
+        if porce_D_plan >= 0.9:
+            if porce_C_plan >= 0.9:
+                if porce_B_plan >= 0.9:
+                    if porce_A_plan >= 0.9:
+                        if rms_d2d <= EP_A_pla:
+                            veri_plan = 'A'
+                        elif rms_d2d <= EP_B_pla:
+                            veri_plan = 'B'
+                        elif rms_d2d <= EP_C_pla:
+                            veri_plan = 'C'
+                        elif rms_d2d <= EP_D_pla:
+                            veri_plan = 'D'
+                        else:
+                            veri_plan = 'sc'
+                    else:
+                        if rms_d2d <= EP_B_pla:
+                            veri_plan = 'B'
+                        elif rms_d2d <= EP_C_pla:
+                            veri_plan = 'C'
+                        elif rms_d2d <= EP_D_pla:
+                            veri_plan = 'D'
+                        else:
+                            veri_plan = 'sc'
+                else:
+                    if rms_d2d <= EP_C_pla:
+                        veri_plan = 'C'
+                    elif rms_d2d <= EP_D_pla:
+                           veri_plan = 'D'
+                    else:
+                        veri_plan = 'sc'
+            else:
+                if rms_d2d <= EP_D_pla:
+                    veri_plan = 'D'
+                else:
+                    veri_plan = 'sc'
+        else:
+            veri_plan = 'sc'
+        
+        if veri_plan == 'sc':
+            saida_plan = 'Classificação pelo Decreto 89.817/ET-CQDG: \nSem classificação para a escala 1/{}' .format(esc_plan)
+        else:
+            saida_plan = 'Classificação pelo Decreto 89.817/ET-CQDG: \nClasse {} na escala 1/{}'.format(veri_plan, esc_plan)
+        
+    elif processamento == 'alt':
+        print('\nAnálise Altimétrica \nMetodologia: ET-CQDG')
+        if porce_D_alt >= 0.9:
+            if porce_C_alt >= 0.9:
+                if porce_B_alt >= 0.9:
+                    if porce_A_alt >= 0.9:
+                        if rms_z <= EP_A_alt:
+                            veri_alt = 'A'
+                        elif rms_z <= EP_B_alt:
+                            veri_alt = 'B'
+                        elif rms_z <= EP_C_alt:
+                            veri_alt = 'C'
+                        elif rms_z <= EP_D_alt:
+                            veri_alt = 'D'
+                        else:
+                            veri_alt = 'sc'
+                    else:
+                        if rms_z <= EP_B_alt:
+                            veri_alt = 'B'
+                        elif rms_z <= EP_C_alt:
+                            veri_alt = 'C'
+                        elif rms_z <= EP_D_alt:
+                            veri_alt = 'D'
+                        else:
+                            veri_alt = 'sc'
+                else:
+                    if rms_z <= EP_C_alt:
+                        veri_alt = 'C'
+                    elif rms_z <= EP_D_alt:
+                           veri_alt = 'D'
+                    else:
+                        veri_alt = 'sc'
+            else:
+                if rms_z <= EP_D_alt:
+                    veri_alt = 'D'
+                else:
+                    veri_alt = 'sc'
+        else:
+            veri_alt = 'sc'
+        
+        if veri_alt == 'sc':
+            saida_alt = 'Classificação pelo Decreto 89.817/ET-CQDG: \nSem classificação para a equidistância de {}m' .format(esc_alt)
+        else:
+            saida_alt = 'Classificação pelo Decreto 89.817/ET-CQDG: \nClasse {} para a equidistância de {}m'.format(veri_alt, esc_alt)
+            
+    else:
+        print('Análise Planimétrica \nMetodologia: ET-CQDG')
+        #PLANIMETRIA
+        if porce_D_plan >= 0.9:
+            if porce_C_plan >= 0.9:
+                if porce_B_plan >= 0.9:
+                    if porce_A_plan >= 0.9:
+                        if rms_d2d <= EP_A_pla:
+                            veri_plan = 'A'
+                        elif rms_d2d <= EP_B_pla:
+                            veri_plan = 'B'
+                        elif rms_d2d <= EP_C_pla:
+                            veri_plan = 'C'
+                        elif rms_d2d <= EP_D_pla:
+                            veri_plan = 'D'
+                        else:
+                            veri_plan = 'sc'
+                    else:
+                        if rms_d2d <= EP_B_pla:
+                            veri_plan = 'B'
+                        elif rms_d2d <= EP_C_pla:
+                            veri_plan = 'C'
+                        elif rms_d2d <= EP_D_pla:
+                            veri_plan = 'D'
+                        else:
+                            veri_plan = 'sc'
+                else:
+                    if rms_d2d <= EP_C_pla:
+                        veri_plan = 'C'
+                    elif rms_d2d <= EP_D_pla:
+                           veri_plan = 'D'
+                    else:
+                        veri_plan = 'sc'
+            else:
+                if rms_d2d <= EP_D_pla:
+                    veri_plan = 'D'
+                else:
+                    veri_plan = 'sc'
+        else:
+            veri_plan = 'sc'
+        
+        if veri_plan == 'sc':
+            saida_plan = 'Classificação pelo Decreto 89.817/ET-CQDG: \nSem classificação para a escala 1/{}' .format(esc_plan)
+        else:
+            saida_plan = 'Classificação pelo Decreto 89.817/ET-CQDG: \nClasse {} na escala 1/{}'.format(veri_plan, esc_plan)
+        #ALTIMETRIA
+        print('\nAnálise Altimétrica \nMetodologia: ET-CQDG')
+        if porce_D_alt >= 0.9:
+            if porce_C_alt >= 0.9:
+                if porce_B_alt >= 0.9:
+                    if porce_A_alt >= 0.9:
+                        if rms_z <= EP_A_alt:
+                            veri_alt = 'A'
+                        elif rms_z <= EP_B_alt:
+                            veri_alt = 'B'
+                        elif rms_z <= EP_C_alt:
+                            veri_alt = 'C'
+                        elif rms_z <= EP_D_alt:
+                            veri_alt = 'D'
+                        else:
+                            veri_alt = 'sc'
+                    else:
+                        if rms_z <= EP_B_alt:
+                            veri_alt = 'B'
+                        elif rms_z <= EP_C_alt:
+                            veri_alt = 'C'
+                        elif rms_z <= EP_D_alt:
+                            veri_alt = 'D'
+                        else:
+                            veri_alt = 'sc'
+                else:
+                    if rms_z <= EP_C_alt:
+                        veri_alt = 'C'
+                    elif rms_z <= EP_D_alt:
+                           veri_alt = 'D'
+                    else:
+                        veri_alt = 'sc'
+            else:
+                if rms_z <= EP_D_alt:
+                    veri_alt = 'D'
+                else:
+                    veri_alt = 'sc'
+        else:
+            veri_alt = 'sc'
+        
+        if veri_alt == 'sc':
+            saida_alt = 'Classificação pelo Decreto 89.817/ET-CQDG: \nSem classificação para a equidistância de {}m' .format(esc_alt)
+        else:
+            saida_alt = 'Classificação pelo Decreto 89.817/ET-CQDG: \nClasse {} para a equidistância de {}m'.format(veri_alt, esc_alt)
+               
+    return(saida_plan,saida_alt)
+
+
+def shapiro(eHi, disc_x, disc_y):
+    shapiro_stat_2D, shapiro_p_valor_2D = stats.shapiro(eHi)
+    shapiro_stat_E, shapiro_p_valor_E = stats.shapiro(disc_x)
+    shapiro_stat_N, shapiro_p_valor_N = stats.shapiro(disc_y)
+    a = ('---------- TESTE SHAPIRO-WILK A 95% ----------')
+    b = ('\nO valor da estatística de Shapiro-Wilk (E) = {:.4f}' .format(shapiro_stat_E))
+    c = ('\nO valor de p de Shapiro-Wilk (E) = {:.4f}' .format(shapiro_p_valor_E))
+    d = ('\n\nO valor da estatística de Shapiro-Wilk (N) = {:.4f}' .format(shapiro_stat_N))
+    e = ('\nO valor de p de Shapiro-Wilk (N) = {:.4f}' .format(shapiro_p_valor_N))
+    f = ('\n\nO valor da estatística de Shapiro-Wilk (2D) = {:.4f}' .format(shapiro_stat_2D))
+    g = ('\nO valor de p de Shapiro-Wilk (2D) = {:.4f}' .format(shapiro_p_valor_2D))
+    dados_shapiro = str(a) + str(b) + str(c) + str(d) + str(e) + str(f) + str(g)
+    
+    if shapiro_p_valor_E > 0.05 and shapiro_p_valor_N > 0.05:
+        result_shapiro = ('\nAplicando o teste Shapiro-Wilk a 95% de confiança, os dados são similares a uma distribuição normal.\n')
+    else:
+        result_shapiro = ('\nAplicando o teste Shapiro-Wilk a 95% de confiança, os dados NÃO são similares a uma distribuição normal.\nO produto NÃO ATENDE aos critérios de avaliação da acurácia posicional absoluta, de acordo com os critérios expostos no manual de posicionamento do INCRA.')
+    return(shapiro_p_valor_E,shapiro_p_valor_N, result_shapiro,dados_shapiro)
+
+def t_student(x_test, x_ref, y_test, y_ref):
+    t_student_E, t_student_p_E = stats.ttest_rel(x_test,x_ref)
+    t_student_N, t_student_p_N = stats.ttest_rel(y_test,y_ref)
+    a = ('--------------- TESTE T STUDENT A 90% ---------------')
+    b = ('\nO valor do t pelo teste T student para as coordenadas E: {:.4f}' .format(t_student_E))
+    c = ('\nO valor do t pelo teste T student para as coordenadas N: {:.4f}' .format(t_student_N))
+    d = ('\nO p-valor pelo teste T student para as coordenadas E: {:.4f}' .format(t_student_p_E))
+    e = ('\nO p-valor pelo teste T student para as coordenadas N: {:.4f}' .format(t_student_p_N))
+    dados_tstudent = str(a) + str(b) + str(c) + str(d) + str(e)
+    if (t_student_p_E >= 0.1) and (t_student_p_N >= 0.1):
+        result_tstudent = ('\nAtravés do segundo teste, sendo o T Student a 90% foi comprovado que NÃO HÁ tendenciosidade nos dados')
+    else:
+      result_tstudent = ('\nAtravés do teste T Student a 90% foi comprovado que HÁ tendenciosidade nos dados. \nO produto NÃO ATENDE aos critérios de avaliação da acurácia posicional absoluta, de acordo com os critérios expostos no manual de posicionamento do INCRA.')
+    return(t_student_p_E,t_student_p_N,result_tstudent,dados_tstudent)
+
+def avalia_INCRA(nome_pt, eHi, tipo_limite,t_student_p_E,t_student_p_N,shapiro_p_valor_E,shapiro_p_valor_N):
+    #Tolerâncias Posicionais de Vértices em metros
+    tol_artificial = 0.5
+    tol_natural = 3.0 
+    tol_inacessivel = 7.5
+    #Avaliar se 100% das discrepâncias posicionais são <= a precisão posicional
+    cont_artificial = 0
+    cont_natural = 0
+    cont_inacessivel = 0
+    for i, ponto in enumerate(nome_pt):
+        if eHi[i] <= tol_artificial:
+            cont_artificial += 1
+        if eHi[i] <= tol_natural:
+            cont_natural += 1
+        if eHi[i] <= tol_inacessivel:
+            cont_inacessivel += 1
+    #Avaliar se 100% das discrepâncias posicionais são <= a precisão posicional
+    if shapiro_p_valor_E > 0.05 and shapiro_p_valor_N > 0.05:
+        #print("\nAplicando o primeiro teste, sendo de Shapiro-Wilk a 95% de confiança, os dados são similares a uma distribuição normal.\n")
+        if (t_student_p_E >= 0.1) and (t_student_p_N >= 0.1):
+            #print('\nAtravés do segundo teste, sendo o T Student a 90% foi comprovado que NÃO HÁ tendenciosidade nos dados')
+            #ARTIFICIAL
+            if tipo_limite == 'Artificial':
+                if cont_artificial == len(nome_pt):
+                    saida_incra = ('\nResultado para o tipo de limite Artificial: Aprovado com 100.000% das amostras menores que a tolerância')
+                else:
+                    saida_incra = ('\nResultado para o tipo de limite Artificial: Reprovado com {:.3%} das amostras menores que a tolerância' .format(cont_artificial/len(nome_pt)))
+                #NATURAL
+            if tipo_limite == 'Natural':
+                if cont_natural == len(nome_pt):
+                    saida_incra = ('\nResultado para o tipo de limite Natural: Aprovado com 100.000% das amostras menores que a tolerância')
+                else:
+                    saida_incra = ('\nResultado para o tipo de limite Natural: Reprovado com {:.3%} das amostras menores que a tolerância' .format(cont_natural/len(nome_pt)))
+                #INACESSÍVEL
+            if tipo_limite == 'Inacessivel':
+                if cont_inacessivel == len(nome_pt):
+                    saida_incra = ('\nResultado para o tipo de limite Inacessível: Aprovado com 100.000% das amostras menores que a tolerância')
+                else:
+                    saida_incra = ('\nResultado para o tipo de limite Inacessível: Reprovado com {:.3%} das amostras menores que a tolerância' .format(cont_inacessivel/len(nome_pt))) 
+        else:
+            saida_incra = 'Reprovado'
+    else:
+        saida_incra = 'Reprovado'
+    return(saida_incra, cont_artificial, cont_natural, cont_inacessivel)
+
+
+def desv_pad_ad(esc, k, ev):
+    #Calculo do desvio padrão admissivel para comparação
+    ma = 0.3*k  #aproximadamente 0.3*esc*k
+    desv_alt = (1/3)*ev
+    return(ma, desv_alt)
+
+def pad_exa(ma, desv_alt):
+    #Calculo o padrão de exatidão
+    pep = 1.645*ma
+    pea = 1.645*desv_alt
+    return(pep, pea)
+
+def discrepancia_nbr(nome_pt, processamento, d_planta, d_terr, h_planta, h_terr ):
+    disc_x = []
+    disc_y = []
+    for i,ponto in enumerate(nome_pt):
+        if processamento == 'plan':
+            d_x = d_planta[i] - d_terr[i]     #Discrepancia em X
+            disc_x.append(d_x)
+    
+        elif processamento == 'alt':
+            d_y = h_planta[i] - h_terr[i]     #Discrepancia em Y
+            disc_y.append(d_y)
+            
+        else:
+            d_x = d_planta[i] - d_terr[i]     #Discrepancia em X
+            disc_x.append(d_x)
+            d_y = h_planta[i] - h_terr[i]     #Discrepancia em Y
+            disc_y.append(d_y)
+            ##disc_res = math.sqrt(disc_x[i]**2 + disc_y[i]**2)
+    return(disc_x,disc_y)
+
+
+def perc_pec_nbr(nome_pt, processamento, disc_x, disc_y, pep, pea ):
+     #Análise da porcentagem do PEC
+     cont_plan = 0
+     cont_alt = 0
+     
+     for i,ponto in enumerate(nome_pt):
+         if processamento == 'plan':    #PLANIMETRIA
+             if disc_x[i] <= pep:
+                cont_plan += 1
+         elif processamento == 'alt':   #ALTIMETRIA
+             if disc_y[i] <= pea:
+                cont_alt  += 1
+         else:                         #PLANIMETRIA E ALTIMETRIA
+             if disc_x[i] <= pep:
+                cont_plan += 1
+                
+             if disc_y[i] <= pea:
+                cont_alt  += 1
+                        
+     porce_plan = cont_plan/len(nome_pt)
+     porce_alt = cont_alt/len(nome_pt)
+     return(porce_alt, porce_plan)
+
+def desv_pad_amostras(nome_pt, processamento, disc_x, disc_y):
+    desv_pad_plan = 0
+    desv_pad_alt = 0
+    
+    if  processamento == 'plan':
+        for i, ponto in enumerate(nome_pt):
+            desv_pad_plan += (disc_x[i]**2)/(len(nome_pt)-1)
+        desv_pad_plan = math.sqrt(desv_pad_plan)
+    else:
+        for i, ponto in enumerate(nome_pt):
+            desv_pad_alt += (disc_y[i]**2)/(len(nome_pt)-1)
+        desv_pad_alt = math.sqrt(desv_pad_alt)
+    return(desv_pad_alt, desv_pad_plan)
+    
+def calc_rms_nbr(nome_pt, processamento, disc_x, disc_y):
+    rms_x = 0
+    rms_y = 0
+    for i,ponto in enumerate(nome_pt):
+        if processamento == 'plan':
+            rms_x = rms_x + (disc_x[i]**2)/(len(nome_pt))
+        else:
+            rms_y = rms_y + (disc_y[i]**2)/(len(nome_pt))
+            
+    rms_x = math.sqrt(rms_x)
+    rms_y = math.sqrt(rms_y)
+    return(rms_x, rms_y)
+
+def analise_nbr(processamento, desv_pad_plan,porce_plan, ma, porce_alt, desv_pad_alt):
+    saida_plan = ''
+    saida_alt = ''
+    if processamento == 'plan':
+        if porce_plan >= 0.9:
+            if desv_pad_plan <= ma:
+                saida_plan = ("Planimetria Aprovada")
+            else:
+                saida_plan = ('Planimetria Reprovada')
+        else:
+            sainda_plan = ('Planimetria Reprovada')
+    
+    elif processamento == 'alt':
+        if porce_alt >= 0.9:
+            if desv_pad_alt <= ma:
+                saida_alt = ("Altimetria Aprovada")
+            else:
+                saida_alt = ('Altimetria Reprovada')
+        else:
+            saida_alt = ('Altimetria Reprovada')
+    else:
+        if porce_plan >= 0.9:
+            if desv_pad_plan <= ma:
+                saida_plan = ("Planimetria Aprovada")
+            else:
+                saida_plan = ('Planimetria Reprovada')
+        else:
+            saida_plan = ('Planimetria Reprovada')
+            
+        if porce_alt >= 0.9:
+            if desv_pad_alt <= ma:
+                saida_alt = ("Altimetria Aprovada")
+            else:
+                saida_alt = ('Altimetria Reprovada')
+        else:
+            saida_alt = ('Altimetria Reprovada')
+    return(saida_plan,saida_alt)
