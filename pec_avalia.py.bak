@@ -175,8 +175,6 @@ class ExemploPluginPEC:
         # will be set False in run()
         self.first_start = True
         
-
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -260,13 +258,19 @@ class ExemploPluginPEC:
             
         if norma == "NBR 13.133 (Versão 1994)":
             self.dlg.comboBox_9.setEnabled(False)
-            if self.dlg.checkBox.isChecked and self.dlg.checkBox_2.isChecked():
-                self.dlg.checkBox.setChecked(False)
-                self.dlg.checkBox_2.setChecked(False)   
-            elif self.dlg.checkBox.isChecked():
+            if self.dlg.checkBox.isChecked():
                 self.dlg.checkBox_2.setEnabled(False)
+                self.dlg.comboBox_4.setEnabled(True)
+                self.dlg.comboBox_7.setEnabled(False)
             elif self.dlg.checkBox_2.isChecked():
                 self.dlg.checkBox.setEnabled(False)
+                self.dlg.comboBox_4.setEnabled(False)
+                self.dlg.comboBox_7.setEnabled(True) 
+            else:
+                self.dlg.checkBox.setEnabled(True)
+                self.dlg.checkBox_2.setEnabled(True)
+                self.dlg.comboBox_4.setEnabled(True)
+                self.dlg.comboBox_7.setEnabled(True)
  
         if norma == "Decreto 89.817/ET-CQDG":
             self.dlg.comboBox_9.setEnabled(False)
@@ -596,12 +600,18 @@ class ExemploPluginPEC:
     def analisa_processamento(self):
         if self.dlg.comboBox_3.currentText() == "NBR 13.133 (Versão 1994)":
             if self.dlg.checkBox.isChecked():
-                self.dlg.checkBox_2.setEnabled(False) 
+                self.dlg.checkBox_2.setEnabled(False)
+                self.dlg.comboBox_4.setEnabled(True)
+                self.dlg.comboBox_7.setEnabled(False)
             elif self.dlg.checkBox_2.isChecked():
                 self.dlg.checkBox.setEnabled(False)
+                self.dlg.comboBox_4.setEnabled(False)
+                self.dlg.comboBox_7.setEnabled(True) 
             else:
                 self.dlg.checkBox.setEnabled(True)
                 self.dlg.checkBox_2.setEnabled(True)
+                self.dlg.comboBox_4.setEnabled(True)
+                self.dlg.comboBox_7.setEnabled(True)
                 
         if self.dlg.comboBox_3.currentText() == "Decreto 89.817/ET-CQDG":        
             if self.dlg.checkBox_2.isChecked():
@@ -634,6 +644,7 @@ class ExemploPluginPEC:
         # show the dialog
         self.dlg.show()
         #adicionando as funções criadas
+        self.local_saida = " "
         self.carregaVetor()
         self.dlg.toolButton.clicked.connect(self.abrirVetor)
         self.dlg.toolButton_2.clicked.connect(self.abrirVetor)
@@ -647,7 +658,6 @@ class ExemploPluginPEC:
         self.dlg.checkBox.clicked.connect(self.analisa_processamento)
         self.dlg.checkBox_2.clicked.connect(self.analisa_processamento)
 
-        
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
@@ -657,41 +667,44 @@ class ExemploPluginPEC:
             if norma == "NBR 13.133 (Versão 1994)": 
                 if processamento == 'plan':
                     if self.obterTest().geometryType() == QgsWkbTypes.PointGeometry or self.obterRef().geometryType() == QgsWkbTypes.PointGeometry:
-                        self.iface.messageBar().pushMessage("Insira apenas camadas tipo linha para cálculos da NBR 13.133 planimétrico")
+                        self.iface.messageBar().pushMessage("Insira apenas camadas tipo linha para os cálculos da NBR 13.133 planimétrico")
                         i_teste = 1
                     else:
                         saida, idd, d_planta, d_terr, h_planta, h_terr = self.leitura_nbr(processamento)
                         self.iface.messageBar().pushMessage("Concluido")
                 elif processamento == 'alt':
                     if self.obterTest().geometryType() == QgsWkbTypes.LineGeometry or self.obterRef().geometryType() == QgsWkbTypes.LineGeometry:
-                        self.iface.messageBar().pushMessage("Insira apenas camadas tipo ponto para cálculos da NBR 13.133 altimétrico")
+                        self.iface.messageBar().pushMessage("Insira apenas camadas tipo ponto para os cálculos da NBR 13.133 altimétrico")
                         i_teste = 1
                     else:
                         saida, idd, d_planta, d_terr, h_planta, h_terr = self.leitura_nbr(processamento)
                         self.iface.messageBar().pushMessage("Concluido")
-            elif norma == "Decreto 89.817/ET-CQDG": 
-                saida, idd, xt, yt, zt, xr, yr, zr = self.leitura_decreto()
-                self.iface.messageBar().pushMessage("Concluido")
-            elif norma == "INCRA":
-                saida, idd, xt, yt, zt, xr, yr, zr = self.leitura_incra()
-                if len(idd) >= 20:
+            elif norma == "Decreto 89.817/ET-CQDG":
+                if self.obterTest().geometryType() == QgsWkbTypes.PointGeometry and self.obterRef().geometryType() == QgsWkbTypes.PointGeometry:
+                    saida, idd, xt, yt, zt, xr, yr, zr = self.leitura_decreto()
                     self.iface.messageBar().pushMessage("Concluido")
-                    pass
                 else:
+                    self.iface.messageBar().pushMessage("Insira apenas camadas tipo ponto para os cálculos do Decreto 89.817/ET-CQDG")
                     i_teste = 1
-                    self.iface.messageBar().pushMessage("Amostra menor que 20 pontos")
-
-            # output_file2 = open("C:/Users/isaac/Desktop/BBT_Funcoes_PY/resultado.txt", "wt")
-            # #ARQUIVO ENTRADA GEOPEC
-            # for f in self.join.getFeatures():
-                # geom = f.geometry()
-                # textline = '%s\t%f\t%f\t%f\t%f\t%f\t%f\n' % (f["IDr"], f["Xxtest"], f["Yytest"], f["Zztest"], f["Xxref"], f["Yyref"], f["Zzref"])
-                # output_file2.write(textline)
-            # output_file2.close()
-            
+            elif norma == "INCRA":
+                if self.obterTest().geometryType() == QgsWkbTypes.PointGeometry and self.obterRef().geometryType() == QgsWkbTypes.PointGeometry:
+                    saida, idd, xt, yt, zt, xr, yr, zr = self.leitura_incra()
+                    if len(idd) >= 20:
+                        self.iface.messageBar().pushMessage("Concluido")
+                        pass
+                    else:
+                        i_teste = 1
+                        self.iface.messageBar().pushMessage("Amostra menor que 20 pontos")
+                else:
+                    self.iface.messageBar().pushMessage("Insira apenas camadas tipo ponto para os cálculos do INCRA")
+                    i_teste = 1
             if i_teste != 1:
-                output_file = open(self.local_saida, "wt") 
-            if norma == "Decreto 89.817/ET-CQDG":
+                if self.local_saida == " ":
+                    self.iface.messageBar().pushMessage("Insira um local para salvar o relatório")
+                    i_teste = 1
+                else:
+                    output_file = open(self.local_saida, "wt")
+            if norma == "Decreto 89.817/ET-CQDG" and i_teste != 1:
                 #Calculo dos Parametros           
                 EM_A_pla,EM_A_alt,EM_B_pla,EM_B_alt,EM_C_pla,EM_C_alt,EM_D_pla,EM_D_alt, EP_A_pla,EP_A_alt,EP_B_pla,EP_B_alt,EP_C_pla,EP_C_alt,EP_D_pla,EP_D_alt = param_classes(esc_plan,esc_alt)
                 #Calculos das Discrepancias
@@ -732,15 +745,14 @@ class ExemploPluginPEC:
                     t_student_p_E,t_student_p_N,result_tstudent,dados_tstudent = t_student(xt, xr, yt, yr)
                     #Avaliar se 100% das discrepâncias posicionais são <= a precisão posicional
                     saida_incra, cont_artificial, cont_natural, cont_inacessivel = avalia_INCRA(idd, eHi, tipo_limite,t_student_p_E,t_student_p_N,shapiro_p_valor_E,shapiro_p_valor_N)
-                    
-                    
+                       
             #RELATÓRIO
             if i_teste != 1:
                 output_file.write(' '*25 + 'PROCESSAMENTO ACURÁCIA POSICIONAL - PEC AVALIA' + ' '*25)
                 output_file.write('\n' + '-'*100 + '\n\n')
                 output_file.write('Norma utilizada: {}' .format(norma) +'\n')
                 
-            if norma == "Decreto 89.817/ET-CQDG":
+            if norma == "Decreto 89.817/ET-CQDG" and i_teste != 1:
                 if processamento == 'plan':
                     output_file.write('Processamento: Planimétrico\n')
                     output_file.write('Escala planimétrica: 1/{}' .format(esc_plan) +'\n')
@@ -769,7 +781,7 @@ class ExemploPluginPEC:
                 output_file.write('Camada teste: {}' .format(self.dlg.comboBox.currentText()) + '\n')
                 output_file.write('Camada de referência: {}' .format(self.dlg.comboBox_2.currentText()) + '\n')
                 output_file.write('\n' + '-'*100 + '\n\n')
-            if norma == "Decreto 89.817/ET-CQDG":
+            if norma == "Decreto 89.817/ET-CQDG" and i_teste != 1:
                 if processamento == 'plan':
                     output_file.write('RESULTADO PLANIMETRIA:\n')
                     output_file.write(saida_plan + '\n')
@@ -799,7 +811,7 @@ class ExemploPluginPEC:
                 output_file.write('\n' + '-'*100 + '\n\n')
                 output_file.write('ESTATÍSTICAS:\n')
                 output_file.write('Número de pontos utilizados: {}\n\n' .format(len(idd)))
-            if norma == "Decreto 89.817/ET-CQDG":
+            if norma == "Decreto 89.817/ET-CQDG" and i_teste != 1:
                 if processamento == 'plan':
                     output_file.write(' '*18 + '    dx   ' + ' '*5 + '    dy   ' + ' '*5 + '    d2d  \n')
                     output_file.write('Média             ' + '{:>9.4f}' .format((st.mean(disc_x))) + ' '*5 + '{:>9.4f}' .format((st.mean(disc_y))) + ' '*5 + '{:>9.4f}' .format((st.mean(eHi))) + '\n')
@@ -854,7 +866,7 @@ class ExemploPluginPEC:
             if i_teste != 1:
                 output_file.write('\n' + '-'*100 + '\n\n')
             
-            if norma == "Decreto 89.817/ET-CQDG":
+            if norma == "Decreto 89.817/ET-CQDG" and i_teste != 1:
                 if processamento == 'plan':
                     output_file.write('Tolerâncias' + ' '*5 + 'PEC-PCD Plan' + ' '*5 + '   EP Plan   ')
                     output_file.write('\n' + '     A     ' + ' '*5 + '{:^12.2f}' .format(EM_A_pla) + ' '*5 + '{:^13.2f}' .format(EP_A_pla))
