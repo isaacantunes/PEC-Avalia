@@ -1,0 +1,6 @@
+PEC-Avalia
+Este plugin possibilita executar a avaliação da acurácia posicional em produtos e dados cartográficos a partir de três normas/padrões brasileiros: (i) Decreto nº 89.817 / ET-CQDG; (ii) NBR 13.133, versão 1994; (iii) norma de execução nº 02 de 2018 do INCRA. Para sua aplicação é necessário dispor de uma camada vetorial de teste (produto avaliado) e uma camada vetorial dos dados de referência. Ao executar o processo, o plugin gera um arquivo .txt com o relatorio do processamento e a classificação de acordo com a norma utilizada.
+
+Programa desenvolvido por Isaac Antunes Miranda Junior do curso de Engenharia de Agrimensura e Cartográfica da Universidade Federal de Viçosa, orientado pelo Professor Afonso de Paula dos Santos através do programa de iniciação cientifica CAPES/PIBIC.
+
+Este projeto de pesquisa é parte integrante de pesquisas que estão em desenvolvimento no Programa de Pós-Graduação em Engenharia Civil (PPGEC), área de concentração em Informações Espaciais, linha de pesquisa Cartografia, da Universidade Federal de Viçosa.
